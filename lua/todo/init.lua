@@ -18,7 +18,11 @@ M.settings = config.settings
 -- vim.pretty_print(config.settings.keywords)
 M.togglehl = config.toggleHighlight
 
-local keymap = require("chaos.plugin.func").keymap
+local function keymap(mode, lhs, rhs, opts)
+	local options = { noremap = true, silent = true }
+	options = vim.tbl_deep_extend("force", options, opts or {})
+	vim.keymap.set(mode, lhs, rhs, options)
+end
 
 local markdown_group = vim.api.nvim_create_augroup("markdown", { clear = true })
 vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {

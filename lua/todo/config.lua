@@ -91,7 +91,7 @@ function M.highlight()
 	end
 end
 
-local autocmd = require("chaos.base.autocmd")
+local autocmd = require("todo.autocmd")
 autocmd.toggle_augroup("Todo", function(aug)
 	local todoRedrawEvents = {
 		"BufWinEnter",
