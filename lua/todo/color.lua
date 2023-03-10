@@ -1,9 +1,9 @@
 local M = {}
 
-function M.isBright(colorStr)
+function M.is_bright(color_str)
 	local color = 0
-	if type(colorStr) == "string" then
-		color = vim.api.nvim_get_color_by_name(colorStr)
+	if type(color_str) == "string" then
+		color = vim.api.nvim_get_color_by_name(color_str)
 	end
 	-- print(color)
 	local b = color % 256
@@ -17,15 +17,15 @@ function M.isBright(colorStr)
 	end
 end
 
-function M.toDecimal(hexColor)
-	local r = tonumber(hexColor:sub(2, 3), 16)
-	local g = tonumber(hexColor:sub(4, 5), 16)
-	local b = tonumber(hexColor:sub(6, 7), 16)
+function M.to_decimal(hex_color)
+	local r = tonumber(hex_color:sub(2, 3), 16)
+	local g = tonumber(hex_color:sub(4, 5), 16)
+	local b = tonumber(hex_color:sub(6, 7), 16)
 	return r * 256 * 256 + g * 256 + b
 end
 
--- print(toDecimal("#ff0000"))
--- print(toDecimal("#0000ff"))
--- print(M.isBright("white"))
--- print(M.isBright("red"))
+-- print(to_decimal("#ff0000"))
+-- print(to_decimal("#0000ff"))
+-- print(M.is_bright("white"))
+-- print(M.is_bright("red"))
 return M

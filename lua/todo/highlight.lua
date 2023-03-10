@@ -1,6 +1,6 @@
 local M = {}
 
-local function getDisplayedBuffers()
+local function get_displayed_buffers()
 	local displayed_buffers = {}
 	local windows = vim.api.nvim_list_wins()
 	for _, win in ipairs(windows) do
@@ -10,8 +10,8 @@ local function getDisplayedBuffers()
 	return displayed_buffers
 end
 
-function M.highlightWord(ns, word, highlight_group, filetypes)
-	local bufs = getDisplayedBuffers()
+function M.highlight_word(ns, word, highlight_group, filetypes)
+	local bufs = get_displayed_buffers()
 	for _, buf in ipairs(bufs) do
 		local ft = vim.api.nvim_buf_get_option(buf, "ft")
 		if vim.tbl_contains(filetypes, ft) then
@@ -27,13 +27,13 @@ function M.highlightWord(ns, word, highlight_group, filetypes)
 	end
 end
 
-function M.addHighlightGroups(ns, groups)
+function M.add_highlight_groups(ns, groups)
 	for group_name, highlight_options in pairs(groups) do
 		vim.api.nvim_set_hl(ns, group_name, highlight_options)
 	end
 end
 
-function M.defineSigns(signs)
+function M.define_signs(signs)
 	for sign_name, sign_options in pairs(signs) do
 		vim.fn.sign_define(sign_name, sign_options)
 	end

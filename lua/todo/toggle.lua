@@ -4,7 +4,7 @@ local function str_replace(str, old_str, new_str)
 	return string.gsub(str, old_str:gsub("[%(%)%.%%%+%-%*%?%[%^%$%]]", "%%%1"), new_str)
 end
 
-local function clearLine(line, headers)
+local function clear_line(line, headers)
 	local pats = {}
 	for _, header in ipairs(headers) do
 		table.insert(pats, header)
@@ -19,30 +19,30 @@ local function clearLine(line, headers)
 	return cline
 end
 
-local function addTimeTag(mode)
+local function add_time_tag(mode)
 	return string.format(" @%s(%s)", mode, os.date("%Y-%m-%d %H:%M"))
 end
 
-local function startTime(line)
+local function start_time(line)
 	local pattag = " @start%((%d%d%d%d%-%d%d%-%d%d %d%d:%d%d)%)"
-	local _, _, timeStr = string.find(line, pattag)
-	return timeStr
+	local _, _, time_str = string.find(line, pattag)
+	return time_str
 end
 
-local function findTimeUsed(line)
+local function find_time_used(line)
 	local pattag = "@used%((%d+)m%)"
-	local _, _, timeStr = string.find(line, pattag)
-	if timeStr then
-		return tonumber(timeStr)
+	local _, _, time_str = string.find(line, pattag)
+	if time_str then
+		return tonumber(time_str)
 	else
 		return 0
 	end
 end
 
-local function timeDiff(line)
-	local dateStr = startTime(line)
-	if dateStr then
-		local _, _, y, m, d, _hour, _min, _sec = string.find(dateStr, "(%d+)%-(%d+)%-(%d+)%s*(%d+):(%d+)")
+local function time_diff(line)
+	local date_str = start_time(line)
+	if date_str then
+		local _, _, y, m, d, _hour, _min, _sec = string.find(date_str, "(%d+)%-(%d+)%-(%d+)%s*(%d+):(%d+)")
 		local timestamp = os.time({
 			year = y,
 			month = m,
@@ -51,29 +51,29 @@ local function timeDiff(line)
 			min = _min,
 			sec = _sec,
 		})
-		local difTime = os.difftime(os.time(), timestamp) / 60
-		return difTime
+		local dif_time = os.difftime(os.time(), timestamp) / 60
+		return dif_time
 	else
 		return 0
 	end
 end
 
-local function newTimeTag(line)
-	local newUsed = findTimeUsed(line) + timeDiff(line)
-	local timeTag = ""
-	if newUsed ~= 0 then
-		timeTag = string.format(" @used(%dm)", newUsed)
+local function new_time_tag(line)
+	local new_used = find_time_used(line) + time_diff(line)
+	local time_tag = ""
+	if new_used ~= 0 then
+		time_tag = string.format(" @used(%dm)", new_used)
 	end
-	return timeTag
+	return time_tag
 end
 
-function M.change(line, keyWord, tbl)
-	local clearedLine = clearLine(line, vim.tbl_values(tbl))
-	local _, eIndex, spaceHeader = string.find(clearedLine, "^(%s*%d*%.? ?)")
-	spaceHeader = spaceHeader or ""
-	local header = tbl[keyWord]
-	local subStr = string.sub(clearedLine, eIndex + 1)
-	local ret = spaceHeader .. header .. subStr .. addTimeTag(keyWord) .. newTimeTag(line)
+function M.change(line, key_word, tbl)
+	local cleared_line = clear_line(line, vim.tbl_values(tbl))
+	local _, e_index, space_header = string.find(cleared_line, "^(%s*%d*%.? ?)")
+	space_header = space_header or ""
+	local header = tbl[key_word]
+	local sub_str = string.sub(cleared_line, e_index + 1)
+	local ret = space_header .. header .. sub_str .. add_time_tag(key_word) .. new_time_tag(line)
 	return ret
 end
 -- vim {{{
@@ -83,20 +83,20 @@ local function visual_selection_range()
 	return ls - 1, cs - 1, le, ce
 end
 
--- local tblBoxes = get_values_by_key(M.keywords, "box")
+-- local tbl_boxes = get_values_by_key(M.keywords, "box")
 
-function M.todoChange(keyWord, tblBoxes)
-	local startIndex, _, endIndex, _ = visual_selection_range()
-	if endIndex - startIndex > 0 then
-		local optedLines = {}
-		local lines = vim.api.nvim_buf_get_lines(0, startIndex, endIndex, false)
+function M.todo_change(key_word, tbl_boxes)
+	local start_index, _, end_index, _ = visual_selection_range()
+	if end_index - start_index > 0 then
+		local opted_lines = {}
+		local lines = vim.api.nvim_buf_get_lines(0, start_index, end_index, false)
 		for _, line in ipairs(lines) do
-			table.insert(optedLines, M.change(line, keyWord, tblBoxes))
+			table.insert(opted_lines, M.change(line, key_word, tbl_boxes))
 		end
-		vim.api.nvim_buf_set_lines(0, startIndex, endIndex, false, optedLines)
+		vim.api.nvim_buf_set_lines(0, start_index, end_index, false, opted_lines)
 	else
-		local curLine = vim.api.nvim_get_current_line()
-		vim.api.nvim_set_current_line(M.change(curLine, keyWord, tblBoxes))
+		local cur_line = vim.api.nvim_get_current_line()
+		vim.api.nvim_set_current_line(M.change(cur_line, key_word, tbl_boxes))
 	end
 end
 
@@ -110,7 +110,7 @@ local headers = {
 	"-[S]",
 }
 
-local todoTable = {
+local todo_table = {
 	init = "- [ ] ",
 	start = "- [ ] ",
 	finish = "- [X] ",
@@ -120,19 +120,19 @@ local todoTable = {
 	clear = "",
 }
 
-local testLine = "-[X] this is finished"
-print(clearLine(testLine, headers))
-testLine = "-[X] this is finished @finish(2022-01-01)"
-print(clearLine(testLine, headers))
+local test_line = "-[X] this is finished"
+print(clear_line(test_line, headers))
+test_line = "-[X] this is finished @finish(2022-01-01)"
+print(clear_line(test_line, headers))
 
-testLine = "Todo: this is finished @finish(2022-01-01)"
-print(clearLine(testLine, headers))
+test_line = "Todo: this is finished @finish(2022-01-01)"
+print(clear_line(test_line, headers))
 
-testLine = "Todo: this is finished @finish(2022-01-01)"
-print(M.change(testLine, "stop", todoTable))
+test_line = "Todo: this is finished @finish(2022-01-01)"
+print(M.change(test_line, "stop", todo_table))
 
-testLine = "Todo: this is finished @start(2023-01-01 12:22)"
-print(M.change(testLine, "finish", todoTable)) ]]
+test_line = "Todo: this is finished @start(2023-01-01 12:22)"
+print(M.change(test_line, "finish", todo_table)) ]]
 
 -------------------------------------------------------------------------------- }}} test
 

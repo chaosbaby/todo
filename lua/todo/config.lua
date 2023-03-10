@@ -1,36 +1,48 @@
 local M = {}
 
 M.settings = {}
-M.settings.keywords = {
-	init = { box = "- [ ] ", icon = " ", color = "blue", alt = { "@init: ", "@init" } },
-	start = { box = "- [ ] ", icon = "▶️", color = "green", alt = { "@start: ", "@start" } },
-	finish = { box = "- [X] ", icon = " ", color = "yellow", alt = { "@finish: ", "@finish" } },
-	stop = { box = "- [S]", icon = "⏹️", color = "red", alt = { "@stop: ", "@stop" } },
-	cancel = { box = "-[C]", icon = "❌", color = "DarkRed", alt = { "@cancel: ", "@cancel" } },
-	clear = { box = "", icon = "", color = "white", alt = { "@clear: ", "@clear" } },
-}
-M.settings.actkeywords = {}
 
 function M.setup(settings)
 	if type(settings) == "table" then
 		M.settings = vim.tbl_deep_extend("keep", settings, M.settings)
 	end
-	M.ns = vim.api.nvim_create_namespace("Todo")
+	M.ns = vim.api.nvim_create_namespace("")
+	if settings.highlight_at_first then
+		M.settings.actkeywords = M.settings.keywords
+	end
 	M.boot()
+	local function keymap(mode, lhs, rhs, opts)
+		local options = { noremap = true, silent = true }
+		options = vim.tbl_deep_extend("force", options, opts or {})
+		vim.keymap.set(mode, lhs, rhs, options)
+	end
+
+	local markdown_group = vim.api.nvim_create_augroup("markdown", { clear = true })
+	vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+		group = markdown_group,
+		pattern = { "*.md", "*.markdown", "*.vimwiki" },
+		callback = function()
+			for keyword, opts in pairs(M.settings.keywords) do
+				keymap({ "n", "x" }, M.settings.prekey .. opts.key, function()
+					M.todo_change(keyword)
+				end, { buffer = true })
+			end
+		end,
+	})
 end
--- ❌
+
 --
 local color = require("todo.color")
 local hl = require("todo.highlight")
 
-local function addHighlightGroupsBaseOnKeywords()
+local function add_highlight_groups_base_on_keywords()
 	local groups = {}
 	for keyword, options in pairs(M.settings.actkeywords) do
 		local group_text = keyword
 		local group_sign = "Todo_sign_" .. keyword
 		local text_hl_opt = { bg = options.color }
 		local sign_hl_opt = { fg = options.color }
-		if color.isBright(options.color) then
+		if color.is_bright(options.color) then
 			text_hl_opt = { bg = options.color, fg = "black" }
 		else
 			text_hl_opt = { bg = options.color, fg = "white" }
@@ -39,17 +51,17 @@ local function addHighlightGroupsBaseOnKeywords()
 		groups[group_text] = text_hl_opt
 		groups[group_sign] = sign_hl_opt
 	end
-	hl.addHighlightGroups(M.ns, groups)
+	hl.add_highlight_groups(M.ns, groups)
 end
 
-local function defineSignsBaseOnKeywords()
+local function define_signs_base_on_keywords()
 	local signs = {}
 	for keyword, options in pairs(M.settings.actkeywords) do
 		local sign_name = keyword
 		local sign_options = { text = options.icon, texthl = "Todo_sign_" .. keyword }
 		signs[sign_name] = sign_options
 	end
-	hl.defineSigns(signs)
+	hl.define_signs(signs)
 end
 
 local toggle = require("todo.toggle")
@@ -64,17 +76,17 @@ local function get_values_by_key(tbl, key)
 	return result
 end
 
-M.todoChange = function(keyword)
-	toggle.todoChange(keyword, get_values_by_key(M.settings.keywords, "box"))
+M.todo_change = function(keyword)
+	toggle.todo_change(keyword, get_values_by_key(M.settings.keywords, "box"))
 end
 
 function M.boot()
-	addHighlightGroupsBaseOnKeywords()
-	defineSignsBaseOnKeywords()
+	add_highlight_groups_base_on_keywords()
+	define_signs_base_on_keywords()
 	vim.api.nvim_set_hl_ns(M.ns)
 end
 
-function M.toggleHighlight()
+function M.toggle_highlight()
 	if M.ns_set == 0 or nil then
 		M.ns_set = M.ns
 	else
@@ -86,21 +98,21 @@ end
 function M.highlight()
 	for keyword, item in pairs(M.settings.actkeywords) do
 		for _, word in pairs(item.alt) do
-			hl.highlightWord(M.ns, word, keyword, { "vimwiki.markdown" })
+			hl.highlight_word(M.ns, word, keyword, { "vimwiki.markdown" })
 		end
 	end
 end
 
 local autocmd = require("todo.autocmd")
 autocmd.toggle_augroup("Todo", function(aug)
-	local todoRedrawEvents = {
+	local todo_redraw_events = {
 		"BufWinEnter",
 		"WinNew",
 		"BufWritePost",
 		"WinScrolled",
 		"ColorScheme",
 	}
-	vim.api.nvim_create_autocmd(todoRedrawEvents, {
+	vim.api.nvim_create_autocmd(todo_redraw_events, {
 		pattern = "*",
 		callback = function()
 			M.highlight()
@@ -108,7 +120,7 @@ autocmd.toggle_augroup("Todo", function(aug)
 		group = aug,
 	})
 end)
-function M.redrawHighlight(keywords)
+function M.redraw_highlight(keywords)
 	M.ns = vim.api.nvim_create_namespace("")
 	M.settings.actkeywords = {}
 	for _, keyword in ipairs(keywords) do
@@ -121,7 +133,7 @@ end
 
 vim.api.nvim_create_user_command("TodoHl", function(com)
 	local args = com.fargs
-	M.redrawHighlight(args)
+	M.redraw_highlight(args)
 end, {
 	nargs = "+",
 	complete = function(_, l, _)
