@@ -2,6 +2,17 @@ local M = {}
 
 M.settings = {}
 
+local function get_values_by_key(tbl, key)
+	local result = {}
+	for keyword, v in pairs(tbl) do
+		if type(v) == "table" and v[key] ~= nil then
+			result[keyword] = v[key]
+		end
+	end
+	return result
+end
+
+local opfunc = require("todo.opfunc")
 function M.setup(settings)
 	if type(settings) == "table" then
 		M.settings = vim.tbl_deep_extend("keep", settings, M.settings)
@@ -27,6 +38,21 @@ function M.setup(settings)
 					M.todo_change(keyword)
 				end, { buffer = true })
 			end
+		end,
+	})
+	vim.api.nvim_create_user_command("TodoHl", function(com)
+		local args = com.fargs
+		M.redraw_highlight(args)
+	end, {
+		nargs = "+",
+		complete = function(_, l, _)
+			local keywords = require("todo").settings.keywords
+			local completions = get_values_by_key(keywords, "box")
+			local selected = vim.split(l, " ", {})
+			for _, key in ipairs(selected) do
+				completions[key] = nil
+			end
+			return vim.tbl_keys(completions)
 		end,
 	})
 end
@@ -66,16 +92,6 @@ end
 
 local toggle = require("todo.toggle")
 
-local function get_values_by_key(tbl, key)
-	local result = {}
-	for keyword, v in pairs(tbl) do
-		if type(v) == "table" and v[key] ~= nil then
-			result[keyword] = v[key]
-		end
-	end
-	return result
-end
-
 M.todo_change = function(keyword)
 	toggle.todo_change(keyword, get_values_by_key(M.settings.keywords, "box"))
 end
@@ -83,6 +99,7 @@ end
 function M.boot()
 	add_highlight_groups_base_on_keywords()
 	define_signs_base_on_keywords()
+	vim.fn.sign_unplace("todo")
 	vim.api.nvim_set_hl_ns(M.ns)
 end
 
@@ -120,31 +137,17 @@ autocmd.toggle_augroup("Todo", function(aug)
 		group = aug,
 	})
 end)
+
 function M.redraw_highlight(keywords)
 	M.ns = vim.api.nvim_create_namespace("")
 	M.settings.actkeywords = {}
 	for _, keyword in ipairs(keywords) do
 		M.settings.actkeywords[keyword] = M.settings.keywords[keyword]
 	end
+	-- vim.fn.sign_unplace()
 	M.boot()
 	vim.api.nvim_set_hl_ns(M.ns)
 	vim.cmd("w")
 end
-
-vim.api.nvim_create_user_command("TodoHl", function(com)
-	local args = com.fargs
-	M.redraw_highlight(args)
-end, {
-	nargs = "+",
-	complete = function(_, l, _)
-		local keywords = require("todo").settings.keywords
-		local completions = get_values_by_key(keywords, "box")
-		local selected = vim.split(l, " ", {})
-		for _, key in ipairs(selected) do
-			completions[key] = nil
-		end
-		return vim.tbl_keys(completions)
-	end,
-})
 
 return M

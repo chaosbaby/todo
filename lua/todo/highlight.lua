@@ -20,7 +20,7 @@ function M.highlight_word(ns, word, highlight_group, filetypes)
 				if string.find(line, word) then
 					local col_start, col_end = string.find(line, word)
 					vim.api.nvim_buf_add_highlight(buf, ns, highlight_group, i - 1, col_start - 1, col_end)
-					-- vim.fn.sign_place(0, "", highlight_group, buf, { lnum = i, priority = 10 })
+					vim.fn.sign_place(0, "todo", highlight_group, buf, { lnum = i, priority = 10 })
 				end
 			end
 		end

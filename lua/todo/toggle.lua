@@ -83,8 +83,6 @@ local function visual_selection_range()
 	return ls - 1, cs - 1, le, ce
 end
 
--- local tbl_boxes = get_values_by_key(M.keywords, "box")
-
 function M.todo_change(key_word, tbl_boxes)
 	local start_index, _, end_index, _ = visual_selection_range()
 	if end_index - start_index > 0 then

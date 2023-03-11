@@ -12,7 +12,7 @@ M.default_settings = {
 		clear = { box = "", icon = "", color = "white", alt = { "@clear: ", "@clear" }, key = "c" },
 	},
 	actkeywords = {
-		finish = { box = "- [X] ", icon = " ", color = "yellow", alt = { "@finish: ", "@finish" }, key = "f" },
+		start = { box = "- [ ] ", icon = "▶️", color = "green", alt = { "@start: ", "@start" }, key = "s" },
 	},
 }
 
