@@ -35,17 +35,54 @@ end
 
 function M.get_op_text(range)
 	local sr, sc, er, ec = unpack(range)
-	vim.pretty_print(range)
 	local text_tbl = vim.api.nvim_buf_get_text(0, sr, sc, er, ec, {})
 	local text = vim.fn.join(text_tbl, "\n")
 	return text
 end
 
-function M.operator_gen(g_fun_name, keymap)
-	local ncmd = ":set opfunc=v:lua." .. g_fun_name .. "<cr>g@"
-	local vcmd = ":<c-u>call v:lua." .. g_fun_name .. "(visualmode())<cr>"
-	vim.keymap.set("n", keymap, ncmd, { noremap = true, silent = true })
-	vim.keymap.set("x", keymap, vcmd, { noremap = true, silent = true })
+function M.default(v, default)
+	if v == nil then
+		if type(default) == "function" then
+			default = default()
+		end
+
+		return default
+	else
+		return v
+	end
+end
+
+_G.vimrc__unique_id = M.default(_G.vimrc__unique_id, -1)
+function M.unique_id()
+	_G.vimrc__unique_id = _G.vimrc__unique_id + 1
+	return _G.vimrc__unique_id
+end
+
+M.opfuncs = {}
+function M.create_operator(inherent_motion, op)
+	local opfunc_name = string.format("vimrc__opfunc_%d", M.unique_id())
+	local opfunc_lambda =
+		string.format([[{motion -> v:lua.require('chaos.user.opfunc').opfuncs.%s(motion)}]], opfunc_name)
+
+	local opfunc = function(motion)
+		if motion == nil then
+			vim.o.operatorfunc = opfunc_lambda
+			return "g@" .. inherent_motion
+		end
+
+		op(motion)
+
+		-- In case anything in `op` changes the opfunc, reset it so we can
+		-- still do repeat.
+		vim.o.operatorfunc = opfunc_lambda
+	end
+
+	M.opfuncs[opfunc_name] = opfunc
+	return opfunc
+end
+
+function M.new_operator(op)
+	return M.create_operator("", op)
 end
 
 return M
