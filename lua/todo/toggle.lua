@@ -73,8 +73,12 @@ function M.change(line, key_word, tbl)
 	space_header = space_header or ""
 	local header = tbl[key_word]
 	local sub_str = string.sub(cleared_line, e_index + 1)
-	local ret = space_header .. header .. sub_str .. add_time_tag(key_word) .. new_time_tag(line)
-	return ret
+
+	if header == "" then
+		return string.format("%s%s", space_header, sub_str)
+	else
+		return space_header .. header .. sub_str .. add_time_tag(key_word) .. new_time_tag(line)
+	end
 end
 -- vim {{{
 local function visual_selection_range()
