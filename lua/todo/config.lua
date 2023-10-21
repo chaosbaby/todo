@@ -12,7 +12,6 @@ local function get_values_by_key(tbl, key)
 	return result
 end
 
-local opfunc = require("todo.opfunc")
 function M.setup(settings)
 	if type(settings) == "table" then
 		M.settings = vim.tbl_deep_extend("keep", settings, M.settings)
@@ -36,7 +35,7 @@ function M.setup(settings)
 			for keyword, opts in pairs(M.settings.keywords) do
 				keymap({ "n", "x" }, M.settings.prekey .. opts.key, function()
 					M.todo_change(keyword)
-				end, { buffer = true })
+				end, { buffer = true, desc = keyword })
 			end
 		end,
 	})
