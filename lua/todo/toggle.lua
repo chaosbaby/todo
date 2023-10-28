@@ -102,40 +102,4 @@ function M.todo_change(key_word, tbl_boxes)
 	end
 end
 
--------------------------------------------------------------------------------- }}} vim
-
---[[ -- test {{{
-local headers = {
-	"Todo:",
-	"-[X]",
-	"-[ ]",
-	"-[S]",
-}
-
-local todo_table = {
-	init = "- [ ] ",
-	start = "- [ ] ",
-	finish = "- [X] ",
-	stop = "- [S] ",
-	cancel = "- [C] ",
-	tinit = "* [ ] ",
-	clear = "",
-}
-
-local test_line = "-[X] this is finished"
-print(clear_line(test_line, headers))
-test_line = "-[X] this is finished @finish(2022-01-01)"
-print(clear_line(test_line, headers))
-
-test_line = "Todo: this is finished @finish(2022-01-01)"
-print(clear_line(test_line, headers))
-
-test_line = "Todo: this is finished @finish(2022-01-01)"
-print(M.change(test_line, "stop", todo_table))
-
-test_line = "Todo: this is finished @start(2023-01-01 12:22)"
-print(M.change(test_line, "finish", todo_table)) ]]
-
--------------------------------------------------------------------------------- }}} test
-
 return M
