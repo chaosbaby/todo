@@ -13,6 +13,9 @@ local function get_values_by_key(tbl, key)
 end
 
 function M.setup(settings)
+	if settings == nil then
+		settings = {}
+	end
 	if type(settings) == "table" then
 		M.settings = vim.tbl_deep_extend("keep", settings, M.settings)
 	end
