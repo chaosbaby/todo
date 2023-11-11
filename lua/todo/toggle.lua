@@ -77,9 +77,24 @@ function M.change(line, key_word, tbl)
 	if header == "" then
 		return string.format("%s%s", space_header, sub_str)
 	else
+		return space_header .. header .. sub_str
+	end
+end
+
+function M.change_old(line, key_word, tbl)
+	local cleared_line = clear_line(line, vim.tbl_values(tbl))
+	local _, e_index, space_header = string.find(cleared_line, "^(%s*%d*%.? ?)")
+	space_header = space_header or ""
+	local header = tbl[key_word]
+	local sub_str = string.sub(cleared_line, e_index + 1)
+
+	if header == "" then
+		return string.format("%s%s", space_header, sub_str)
+	else
 		return space_header .. header .. sub_str .. add_time_tag(key_word) .. new_time_tag(line)
 	end
 end
+
 -- vim {{{
 local function visual_selection_range()
 	local _, ls, cs = unpack(vim.fn.getpos("v"))

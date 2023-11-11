@@ -17,8 +17,8 @@ function M.highlight_word(ns, word, highlight_group, filetypes)
 		if vim.tbl_contains(filetypes, ft) then
 			local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
 			for i, line in ipairs(lines) do
-				if string.find(line, word) then
-					local col_start, col_end = string.find(line, word)
+				if string.find(line, word, 1, true) then
+					local col_start, col_end = string.find(line, word, 1, true)
 					vim.api.nvim_buf_add_highlight(buf, ns, highlight_group, i - 1, col_start - 1, col_end)
 					vim.fn.sign_place(0, "todo", highlight_group, buf, { lnum = i, priority = 10 })
 				end

@@ -48,7 +48,7 @@ function M.setup(settings)
 	end, {
 		nargs = "+",
 		complete = function(_, l, _)
-			local keywords = require("todo").settings.keywords
+			local keywords = M.settings.keywords
 			local completions = get_values_by_key(keywords, "box")
 			local selected = vim.split(l, " ", {})
 			for _, key in ipairs(selected) do
@@ -116,9 +116,9 @@ end
 
 function M.highlight()
 	for keyword, item in pairs(M.settings.actkeywords) do
-		for _, word in pairs(item.alt) do
-			hl.highlight_word(M.ns, word, keyword, { "vimwiki.markdown" })
-		end
+		-- for _, word in pairs(item.box) do
+		hl.highlight_word(M.ns, item.box, keyword, { "vimwiki.markdown" })
+		-- end
 	end
 end
 
